@@ -2,9 +2,9 @@ local RSGCore = exports['rsg-core']:GetCoreObject()
 local isProspecting = false
 local cooldown = 0
 local shovelObject = nil
-local createdObjects = {} -- Table to track dirt piles
+local createdObjects = {} 
 
--- Check if player is too close to an existing dirt pile
+
 local function IsNearDirtPile()
     local playerCoords = GetEntityCoords(PlayerPedId(), true)
     for _, obj in ipairs(createdObjects) do
@@ -28,14 +28,14 @@ local function PlayDiggingAnimation()
     local animName = Config.Dig.anim[2]
     local animDuration = 15000
 
-    -- Clean up existing shovel
+    
     if shovelObject then
         DeleteObject(shovelObject)
         SetEntityAsNoLongerNeeded(shovelObject)
         shovelObject = nil
     end
 
-    -- Load animation
+    
     RequestAnimDict(animDict)
     local timeout = 2000
     while not HasAnimDictLoaded(animDict) and timeout > 0 do
@@ -48,7 +48,7 @@ local function PlayDiggingAnimation()
         return false
     end
 
-    -- Load shovel model
+    
     local model = Config.Dig.shovel
     RequestModel(GetHashKey(model))
     timeout = 2000
@@ -62,7 +62,7 @@ local function PlayDiggingAnimation()
         return false
     end
 
-    -- Create and attach shovel
+  
     shovelObject = CreateObject(GetHashKey(model), playerCoords.x, playerCoords.y, playerCoords.z, true, true, true)
     local boneIndex = GetEntityBoneIndexByName(playerPed, Config.Dig.bone)
     local attachPos = Config.Dig.pos
@@ -75,13 +75,13 @@ local function PlayDiggingAnimation()
         false, false, false, false, 2, true
     )
 
-    -- Play animation
+    
     DisableControlAction(0, 0xB238FE0B, true)
     TaskPlayAnim(playerPed, animDict, animName, 8.0, -8.0, animDuration, 1, 0, false, false, false)
     Wait(animDuration)
     ClearPedTasks(playerPed)
 
-    -- Clean up shovel
+    
     if shovelObject then
         DeleteObject(shovelObject)
         SetEntityAsNoLongerNeeded(shovelObject)
@@ -99,7 +99,7 @@ local function CreateDirtPile()
     local playerForwardVector = GetEntityForwardVector(playerPed)
     local dirtModel = Config.Dig.dirtModel or 'mp005_p_dirtpile_tall_unburied'
 
-    -- Load dirt pile model
+    -
     RequestModel(dirtModel)
     local timeout = 2000
     while not HasModelLoaded(dirtModel) and timeout > 0 do
@@ -112,17 +112,17 @@ local function CreateDirtPile()
         return
     end
 
-    -- Calculate dirt pile position (slightly in front of player)
+    
     local offsetX = 0.6
     local objectX = playerCoords.x + playerForwardVector.x * offsetX
     local objectY = playerCoords.y + playerForwardVector.y * offsetX
     local objectZ = playerCoords.z - 1
 
-    -- Create dirt pile
+  
     local dirtObject = CreateObject(dirtModel, objectX, objectY, objectZ, true, true, false)
     table.insert(createdObjects, dirtObject)
 
-    -- Optional: Auto-delete dirt pile after a delay to prevent clutter
+   
     if Config.Dig.dirtPileDuration then
         Citizen.CreateThread(function()
             Wait(Config.Dig.dirtPileDuration)
@@ -164,7 +164,7 @@ local function StartProspecting()
     lib.notify({ title = "Prospector's Kit", description = "You start digging in the dirt...", type = "info" })
 
     if PlayDiggingAnimation() then
-        CreateDirtPile() -- Spawn dirt pile after successful animation
+        CreateDirtPile() 
         TriggerServerEvent('rsg_prospectors_kit:prospect')
         cooldown = GetGameTimer() + 300000
     else
